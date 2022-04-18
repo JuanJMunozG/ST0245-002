@@ -1,0 +1,53 @@
+import gc
+import geopandas as gpd
+import pandas as pd
+import matplotlib.pyplot as plt
+import networkx as nx
+from shapely import wkt
+
+
+def variascalles(med):
+    for x in med.nodes():
+        if med.degree(x) > 2:
+            print(x)
+
+
+def dijkstra(med, inicio, fin):
+    djk_path = nx.path(med, source=inicio, target=fin, weight=True)
+    return djk_path
+
+
+def crearmapa():
+    bord = pd.read_csv('acoso.csv', sep=';')
+    bord['geometry'] = bord['geometry'].apply(wkt.loads)
+    bord = gpd.GeoDataFrame(bord)
+
+    are = pd.read_csv('acoso.csv', sep=';')
+    are['geometry'] = are['geometry'].apply(wkt.loads)
+    are = gpd.GeoDataFrame(are)
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+
+    are.plot(ax=ax, facecolor='green')
+
+    bord.plot(ax=ax, linewidth=1, edgecolor='black')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def main():
+    df = pd.read_csv('acoso.csv', index_col=None)
+    med = nx.from_pandas_edgelist(df, source='Origen', target='Destino', edge_attr='Distancia entre calles')
+
+    crearmapa()
+    gc.collect()
+
+    inicio = input("Ingrese calle de partida: ")
+    fin = input("Ingrese calle objetivo: ")
+
+    print(dijkstra(med, inicio, fin))
+    variascalles(med)
+
+
+main()
